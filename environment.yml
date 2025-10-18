@@ -1,0 +1,14 @@
+name: line_drawing_app
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.10
+  - pip
+  - pip:
+    - opencv-python
+    - numpy
+    - pillow
+    - scipy
+    - pytest
+    - pytest-cov

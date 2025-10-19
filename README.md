@@ -1,15 +1,15 @@
-# Line Drawing App
+# Edge Detection App
 
-This application converts images into single line drawings.
+This application performs edge detection on images.
 
 ## Features
 
 - Load and view images
 - Crop images to selected areas
-- Find edges in images using edge detection
+- Find edges in images using Canny edge detection
 - Modify and delete unwanted edges
-- Create single line drawings encompassing all remaining edges
-- Save the resulting line drawing
+- Remove small, noisy edges
+- Save the resulting edge-detected image
 
 ## Installation
 
@@ -44,7 +44,7 @@ python main.py
 2. Click "Crop Image" to select a region to crop (optional)
 3. Click "Find Edges" to detect edges in the image
 4. Click "Modify Edges" to select and delete unwanted edges (optional)
-5. Click "Create Line" to generate a single line drawing
+5. Click "Remove Small Edges" to clean up the result (optional)
 6. Click "Save" to save the result
 
 ## Testing
@@ -66,4 +66,3 @@ pytest --cov=. --cov-report=html
 - NumPy for numerical operations
 - Pillow for image handling
 - Tkinter for GUI (included with Python)
-- Scipy for line drawing algorithms

@@ -38,6 +38,20 @@ class EdgeDetectionApp:
         tk.Button(left_panel, text="Load Image", command=self.load_image, **button_config).pack(pady=5)
         tk.Button(left_panel, text="Crop Image", command=self.start_crop_mode, **button_config).pack(pady=5)
         tk.Button(left_panel, text="Find Edges", command=self.find_edges, **button_config).pack(pady=5)
+
+        # Canny threshold controls
+        threshold_frame = tk.Frame(left_panel, bg='lightgray')
+        threshold_frame.pack(pady=5, fill=tk.X)
+        tk.Label(threshold_frame, text="Canny Thresholds:", bg='lightgray').pack(pady=5)
+
+        self.low_threshold = tk.IntVar(value=50)
+        self.high_threshold = tk.IntVar(value=150)
+
+        low_slider = tk.Scale(threshold_frame, from_=0, to=500, orient=tk.HORIZONTAL, variable=self.low_threshold, command=self._on_threshold_change)
+        low_slider.pack(fill=tk.X, padx=20)
+        high_slider = tk.Scale(threshold_frame, from_=0, to=500, orient=tk.HORIZONTAL, variable=self.high_threshold, command=self._on_threshold_change)
+        high_slider.pack(fill=tk.X, padx=20)
+
         tk.Button(left_panel, text="Remove Small Edges", command=self.remove_small_edges, **button_config).pack(pady=5)
         
         # Min edge size control
@@ -215,6 +229,10 @@ class EdgeDetectionApp:
         
         return x1, y1, x2, y2
         
+    def _on_threshold_change(self, _=None):
+        """Handle Canny threshold slider changes."""
+        self.find_edges()
+
     def find_edges(self):
         """Find edges in the current image."""
         if self.processor.current_image is None:
@@ -222,9 +240,11 @@ class EdgeDetectionApp:
             return
         
         try:
-            self.processor.find_edges()
+            low = self.low_threshold.get()
+            high = self.high_threshold.get()
+            self.processor.find_edges(low_threshold=low, high_threshold=high)
             self.display_image()
-            self.update_status("Edges detected")
+            self.update_status(f"Edges detected with thresholds: {low}, {high}")
         except Exception as e:
             messagebox.showerror("Error", f"Failed to find edges: {str(e)}")
     

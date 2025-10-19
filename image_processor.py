@@ -56,6 +56,26 @@ class ImageProcessor:
         self.edges[y1:y2, x1:x2] = 0
         return self.edges
     
+    def remove_small_edges(self, min_size: int = 50) -> np.ndarray:
+        """Remove small connected edge components."""
+        if self.edges is None:
+            raise ValueError("No edges detected")
+        
+        # Find connected components
+        num_labels, labels, stats, _ = cv2.connectedComponentsWithStats(self.edges, connectivity=8)
+        
+        # Create a new edge image
+        filtered_edges = np.zeros_like(self.edges)
+        
+        # Keep only components with area >= min_size (skip label 0 which is background)
+        for i in range(1, num_labels):
+            area = stats[i, cv2.CC_STAT_AREA]
+            if area >= min_size:
+                filtered_edges[labels == i] = 255
+        
+        self.edges = filtered_edges
+        return self.edges
+    
     def create_line_drawing(self) -> np.ndarray:
         """Create a single line drawing from the detected edges."""
         if self.edges is None:

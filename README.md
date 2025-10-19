@@ -7,6 +7,7 @@ This application performs edge detection on images.
 - Load and view images
 - Crop images to selected areas
 - Find edges in images using Canny edge detection
+- Adjust Canny edge detection thresholds with sliders
 - Modify and delete unwanted edges
 - Remove small, noisy edges
 - Save the resulting edge-detected image
@@ -43,9 +44,10 @@ python main.py
 1. Click "Load Image" to select an image file
 2. Click "Crop Image" to select a region to crop (optional)
 3. Click "Find Edges" to detect edges in the image
-4. Click "Modify Edges" to select and delete unwanted edges (optional)
-5. Click "Remove Small Edges" to clean up the result (optional)
-6. Click "Save" to save the result
+4. Adjust the "Canny Thresholds" sliders to fine-tune the edge detection
+5. Click "Modify Edges" to select and delete unwanted edges (optional)
+6. Click "Remove Small Edges" to clean up the result (optional)
+7. Click "Save" to save the result
 
 ## Testing
 

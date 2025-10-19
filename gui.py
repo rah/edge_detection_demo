@@ -52,16 +52,6 @@ class EdgeDetectionApp:
         high_slider = tk.Scale(threshold_frame, from_=0, to=500, orient=tk.HORIZONTAL, variable=self.high_threshold, command=self._on_threshold_change)
         high_slider.pack(fill=tk.X, padx=20)
 
-        tk.Button(left_panel, text="Remove Small Edges", command=self.remove_small_edges, **button_config).pack(pady=5)
-        
-        # Min edge size control
-        size_frame = tk.Frame(left_panel, bg='lightgray')
-        size_frame.pack(pady=5, fill=tk.X)
-        tk.Label(size_frame, text="Min Edge Size:", bg='lightgray').pack(side=tk.LEFT, padx=20)
-        self.min_edge_size = tk.IntVar(value=50)
-        size_spinbox = tk.Spinbox(size_frame, from_=1, to=500, textvariable=self.min_edge_size, width=5)
-        size_spinbox.pack(side=tk.LEFT, padx=5)
-        
         tk.Button(left_panel, text="Modify Edges", command=self.start_modify_edges_mode, **button_config).pack(pady=5)
         tk.Button(left_panel, text="Save", command=self.save_image, **button_config).pack(pady=5)
         tk.Button(left_panel, text="Reset", command=self.reset, **button_config).pack(pady=5)
@@ -248,20 +238,6 @@ class EdgeDetectionApp:
         except Exception as e:
             messagebox.showerror("Error", f"Failed to find edges: {str(e)}")
     
-    def remove_small_edges(self):
-        """Remove small edge components from detected edges."""
-        if self.processor.edges is None:
-            messagebox.showwarning("Warning", "Please find edges first")
-            return
-        
-        try:
-            min_size = self.min_edge_size.get()
-            self.processor.remove_small_edges(min_size=min_size)
-            self.display_image()
-            self.update_status(f"Small edges removed (min size: {min_size})")
-        except Exception as e:
-            messagebox.showerror("Error", f"Failed to remove small edges: {str(e)}")
-            
     def save_image(self):
         """Save the current result."""
         image = self.processor.get_current_display_image()

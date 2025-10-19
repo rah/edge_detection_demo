@@ -38,7 +38,6 @@ class TestImageProcessor:
         assert processor.original_image is None
         assert processor.current_image is None
         assert processor.edges is None
-        assert processor.line_drawing is None
     
     def test_load_image_success(self, processor, test_image_file):
         """Test loading a valid image."""
@@ -109,64 +108,6 @@ class TestImageProcessor:
         with pytest.raises(ValueError, match="No edges detected"):
             processor.delete_edges_in_region(0, 0, 50, 50)
     
-    def test_create_line_drawing_success(self, processor, test_image):
-        """Test creating a line drawing."""
-        processor.current_image = test_image
-        processor.find_edges()
-        line_drawing = processor.create_line_drawing()
-        
-        assert line_drawing is not None
-        assert line_drawing.shape == (100, 100)
-        assert processor.line_drawing is not None
-        # Check that a line was drawn
-        assert np.sum(line_drawing) > 0
-    
-    def test_create_line_drawing_no_edges(self, processor):
-        """Test creating a line drawing without edges."""
-        with pytest.raises(ValueError, match="No edges detected"):
-            processor.create_line_drawing()
-    
-    def test_create_line_drawing_empty_edges(self, processor):
-        """Test creating a line drawing with no edge points."""
-        processor.edges = np.zeros((100, 100), dtype=np.uint8)
-        line_drawing = processor.create_line_drawing()
-        
-        # Should return a blank image
-        assert np.sum(line_drawing) == 0
-    
-    def test_erase_line_in_region(self, processor, test_image):
-        """Test erasing line in a region."""
-        processor.current_image = test_image
-        processor.find_edges()
-        processor.create_line_drawing()
-        
-        original_sum = np.sum(processor.line_drawing)
-        processor.erase_line_in_region(0, 0, 50, 50)
-        new_sum = np.sum(processor.line_drawing)
-        
-        # The sum should be less or equal after erasing
-        assert new_sum <= original_sum
-        # The erased region should be all zeros
-        assert np.sum(processor.line_drawing[0:50, 0:50]) == 0
-    
-    def test_erase_line_no_line_drawing(self, processor):
-        """Test erasing without a line drawing."""
-        with pytest.raises(ValueError, match="No line drawing created"):
-            processor.erase_line_in_region(0, 0, 50, 50)
-    
-    def test_save_image_line_drawing(self, processor, test_image, tmp_path):
-        """Test saving the line drawing."""
-        processor.current_image = test_image
-        processor.find_edges()
-        processor.create_line_drawing()
-        
-        output_path = tmp_path / "output.png"
-        processor.save_image(str(output_path))
-        
-        assert os.path.exists(output_path)
-        saved_image = cv2.imread(str(output_path), cv2.IMREAD_GRAYSCALE)
-        assert saved_image is not None
-    
     def test_save_image_custom(self, processor, test_image, tmp_path):
         """Test saving a custom image."""
         output_path = tmp_path / "output.png"
@@ -193,25 +134,3 @@ class TestImageProcessor:
         # Current image and edges
         processor.find_edges()
         assert np.array_equal(processor.get_current_display_image(), processor.edges)
-        
-        # All three
-        processor.create_line_drawing()
-        assert np.array_equal(processor.get_current_display_image(), processor.line_drawing)
-    
-    def test_continuous_path_single_point(self, processor):
-        """Test path creation with a single point."""
-        points = np.array([[0, 0]])
-        path = processor._create_continuous_path(points)
-        
-        assert len(path) == 1
-        assert np.array_equal(path[0], points[0])
-    
-    def test_continuous_path_multiple_points(self, processor):
-        """Test path creation with multiple points."""
-        points = np.array([[0, 0], [1, 1], [2, 2], [3, 3]])
-        path = processor._create_continuous_path(points)
-        
-        assert len(path) == len(points)
-        # All points should be in the path
-        for point in points:
-            assert any(np.array_equal(point, p) for p in path)

@@ -1,5 +1,5 @@
 """
-Main entry point for the Line Drawing application.
+Main entry point for the Edge Detection application.
 """
 from gui import main
 

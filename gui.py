@@ -1,5 +1,5 @@
 """
-GUI module for the Line Drawing application.
+GUI module for the Edge Detection application.
 """
 import tkinter as tk
 from tkinter import filedialog, messagebox
@@ -10,16 +10,16 @@ from typing import Optional, Tuple
 from image_processor import ImageProcessor
 
 
-class LineDrawingApp:
-    """Main GUI application for line drawing."""
+class EdgeDetectionApp:
+    """Main GUI application for edge detection."""
     
     def __init__(self, root: tk.Tk):
         self.root = root
-        self.root.title("Line Drawing App")
+        self.root.title("Edge Detection App")
         self.root.geometry("1200x800")
         
         self.processor = ImageProcessor()
-        self.mode = None  # Current interaction mode: 'crop', 'modify_edges', 'erase'
+        self.mode = None  # Current interaction mode: 'crop', 'modify_edges'
         self.start_pos = None
         self.current_rect = None
         self.photo_image = None
@@ -49,8 +49,6 @@ class LineDrawingApp:
         size_spinbox.pack(side=tk.LEFT, padx=5)
         
         tk.Button(left_panel, text="Modify Edges", command=self.start_modify_edges_mode, **button_config).pack(pady=5)
-        tk.Button(left_panel, text="Create Line", command=self.create_line, **button_config).pack(pady=5)
-        tk.Button(left_panel, text="Erase Line", command=self.start_erase_mode, **button_config).pack(pady=5)
         tk.Button(left_panel, text="Save", command=self.save_image, **button_config).pack(pady=5)
         tk.Button(left_panel, text="Reset", command=self.reset, **button_config).pack(pady=5)
         
@@ -135,22 +133,14 @@ class LineDrawingApp:
         self.mode = 'modify_edges'
         self.update_status("Modify edges mode: Click and drag to delete edges")
         
-    def start_erase_mode(self):
-        """Start erase line mode."""
-        if self.processor.line_drawing is None:
-            messagebox.showwarning("Warning", "Please create a line drawing first")
-            return
-        self.mode = 'erase'
-        self.update_status("Erase mode: Click and drag to erase line sections")
-        
     def on_mouse_down(self, event):
         """Handle mouse button press."""
-        if self.mode in ['crop', 'modify_edges', 'erase']:
+        if self.mode in ['crop', 'modify_edges']:
             self.start_pos = (event.x, event.y)
             
     def on_mouse_drag(self, event):
         """Handle mouse drag."""
-        if self.mode in ['crop', 'modify_edges', 'erase'] and self.start_pos:
+        if self.mode in ['crop', 'modify_edges'] and self.start_pos:
             # Remove previous rectangle
             if self.current_rect:
                 self.canvas.delete(self.current_rect)
@@ -164,7 +154,7 @@ class LineDrawingApp:
             
     def on_mouse_up(self, event):
         """Handle mouse button release."""
-        if self.mode in ['crop', 'modify_edges', 'erase'] and self.start_pos:
+        if self.mode in ['crop', 'modify_edges'] and self.start_pos:
             end_pos = (event.x, event.y)
             
             # Convert canvas coordinates to image coordinates
@@ -180,9 +170,6 @@ class LineDrawingApp:
                     elif self.mode == 'modify_edges':
                         self.processor.delete_edges_in_region(x1, y1, x2, y2)
                         self.update_status("Edges deleted")
-                    elif self.mode == 'erase':
-                        self.processor.erase_line_in_region(x1, y1, x2, y2)
-                        self.update_status("Line erased")
                     
                     self.display_image()
                 except Exception as e:
@@ -255,21 +242,6 @@ class LineDrawingApp:
         except Exception as e:
             messagebox.showerror("Error", f"Failed to remove small edges: {str(e)}")
             
-    def create_line(self):
-        """Create a single line drawing."""
-        if self.processor.edges is None:
-            messagebox.showwarning("Warning", "Please find edges first")
-            return
-        
-        try:
-            self.update_status("Creating line drawing... (this may take a moment)")
-            self.root.update()
-            self.processor.create_line_drawing()
-            self.display_image()
-            self.update_status("Line drawing created")
-        except Exception as e:
-            messagebox.showerror("Error", f"Failed to create line drawing: {str(e)}")
-            
     def save_image(self):
         """Save the current result."""
         image = self.processor.get_current_display_image()
@@ -305,7 +277,7 @@ class LineDrawingApp:
 def main():
     """Main entry point for the application."""
     root = tk.Tk()
-    app = LineDrawingApp(root)
+    app = EdgeDetectionApp(root)
     root.mainloop()
 
 

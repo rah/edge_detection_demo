@@ -14,7 +14,6 @@ class ImageProcessor:
         self.original_image = None
         self.current_image = None
         self.edges = None
-        self.line_drawing = None
         
     def load_image(self, filepath: str) -> np.ndarray:
         """Load an image from file."""
@@ -76,91 +75,19 @@ class ImageProcessor:
         self.edges = filtered_edges
         return self.edges
     
-    def create_line_drawing(self) -> np.ndarray:
-        """Create a single line drawing from the detected edges."""
-        if self.edges is None:
-            raise ValueError("No edges detected")
-        
-        # Get coordinates of all edge points
-        edge_points = np.column_stack(np.where(self.edges > 0))
-        
-        if len(edge_points) == 0:
-            # No edges, return blank image
-            self.line_drawing = np.zeros_like(self.edges)
-            return self.line_drawing
-        
-        # Use nearest neighbor approach to create a continuous path
-        path = self._create_continuous_path(edge_points)
-        
-        # Draw the path on a blank image
-        self.line_drawing = np.zeros_like(self.edges)
-        for i in range(len(path) - 1):
-            pt1 = tuple(path[i][::-1])  # Reverse to (x, y)
-            pt2 = tuple(path[i + 1][::-1])
-            cv2.line(self.line_drawing, pt1, pt2, 255, 1)
-        
-        return self.line_drawing
-    
-    def _create_continuous_path(self, points: np.ndarray) -> List[np.ndarray]:
-        """Create a continuous path through all points using nearest neighbor."""
-        if len(points) == 0:
-            return []
-        
-        # Use a greedy nearest neighbor approach
-        unvisited = set(range(len(points)))
-        path = []
-        
-        # Start from the first point
-        current_idx = 0
-        path.append(points[current_idx])
-        unvisited.remove(current_idx)
-        
-        while unvisited and len(path) < len(points):
-            current_point = path[-1]
-            
-            # Find nearest unvisited point
-            min_dist = float('inf')
-            nearest_idx = None
-            
-            for idx in unvisited:
-                dist = np.sum((current_point - points[idx]) ** 2)
-                if dist < min_dist:
-                    min_dist = dist
-                    nearest_idx = idx
-            
-            if nearest_idx is not None:
-                path.append(points[nearest_idx])
-                unvisited.remove(nearest_idx)
-            else:
-                break
-        
-        return path
-    
-    def erase_line_in_region(self, x1: int, y1: int, x2: int, y2: int) -> np.ndarray:
-        """Erase the line drawing within the specified rectangular region."""
-        if self.line_drawing is None:
-            raise ValueError("No line drawing created")
-        
-        x1, x2 = min(x1, x2), max(x1, x2)
-        y1, y2 = min(y1, y2), max(y1, y2)
-        
-        self.line_drawing[y1:y2, x1:x2] = 0
-        return self.line_drawing
     
     def save_image(self, filepath: str, image: Optional[np.ndarray] = None) -> None:
-        """Save the specified image or the line drawing to file."""
+        """Save the specified image to file."""
         if image is None:
-            if self.line_drawing is None:
+            if self.current_image is None:
                 raise ValueError("No image to save")
-            image = self.line_drawing
+            image = self.current_image
         
         cv2.imwrite(filepath, image)
     
     def get_current_display_image(self) -> Optional[np.ndarray]:
         """Get the current image to display based on processing state."""
-        if self.line_drawing is not None:
-            return self.line_drawing
-        elif self.edges is not None:
+        if self.edges is not None:
             return self.edges
         elif self.current_image is not None:
             return self.current_image
